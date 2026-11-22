@@ -1,0 +1,88 @@
+import random
+import time
+import textwrap
+
+def say(text):
+    print("\n".join(textwrap.wrap(text, 150)))
+
+#Constants and Dicts
+AC = None
+DMG = None
+HP = 50
+ARMOR = {"breastplate": ("Breastplate", 14), "leathers": ("Leathers", 12), "platearmor": ("Plate Armor", 16)} #values are AC
+WEAPONS = {"shortsword": ("Shortsword", 6, 0, 2), "daggers": ("Daggers", 4, 0, 4), "spear": ("Spear and Shield", 6, 2, 2)} #values are DMG, AC, AttackBonus
+ENEMY = {"goblin": ("Goblin", 6, 9, 20, 2), "troll": ("Troll", 15, 16, 40, 5), "bandit": ("Bandit", 10, 13, 25, 4)} #values are DMG, AC, HP, AttackBonus
+
+say("> You crawl out of a shallow ditch where distant invaders left you for dead, and while looking around, you spot several soldiers fallen in battle. Their equipment looks good enough to use again, and they won't be missing it where they are now...")
+time.sleep(3)
+say("> You find the best looking armours and lay them out along the wall of the ditch. Which do you pick?")
+say("> Breastplate, Leathers, PlateArmor")
+time.sleep(1)
+
+#Determines Player Armor Class (AC); sets weapon enchant and AC bonus turns to 0 initially
+while AC is None:
+    choice = input("> What do you pick up? ").strip().lower()
+
+    if choice == "breastplate": AC = 14
+    elif choice == "leathers": AC = 12
+    elif choice == "platearmor": AC = 16
+    else: say("> You stare blankly at the wall, still dazed and disoriented. Flashes of memory race by, but not enough to form anything coherent. You look at the armor in front of you again.")
+
+name, AC = ARMOR[choice]
+print(f"> You throw on the set of {name}. Your AC is now {AC}.")
+time.sleep(1)
+say("> As you relieve the soldier of his armor, you notice a few sets of weapons that haven't been broken or looted yet. It'd probably be a good idea to have some offensive power as well as defensive power...")
+time.sleep(3)
+say("> As you scrounge around, you find a bloodied shortsword in the back of a lineman, a pair of worn daggers in the pockets of a rogue, and a spear that hasn't been snapped in half along with a shield lying in the mud near what looked to be a heavy infantryman before he was pumped full of arrows.")
+time.sleep(1)
+#Determines player damage and any additional ac gains
+while DMG is None:
+    wchoice = input("> What do you pick up? ").strip().lower()
+    if wchoice in WEAPONS:
+        wname, max_dmg, ac_bonus, attack_bonus = WEAPONS[wchoice]
+        DMG = random.randint(1, max_dmg)
+        AC += ac_bonus
+    else:
+        say("> You stare out at the shattered armor, weapons, and bodies. Something happened, and you don't want to be left defenseless and find out You refocus on the weapons in front of you.")
+
+say(f"> You grab the {wname} and test out the weight. Feels heavy, but it's not like you have a blacksmith on standby to make it perfect.")
+say("> As you finish fastening your gear and climb out of the ditch, you notice a shadow in the fog ahead. You can't make out the shape, it's humanoid, like a bandit, but the fog warps the shadow, giving it the impression of something shorter... A goblin, perhaps?")
+enemy_choice = input("> What do you face? ").strip().lower()
+while enemy_choice not in ENEMY:
+    enemy_choice = input("> The fog ripples still. Try again. ").strip().lower()
+ename, edmg, eac, ehp, e_atk = ENEMY[enemy_choice]
+
+say(f"> A {ename} emerges from the fog, combing for any loot or survivors. Brace yourself, and prepare for a fight!")
+
+while ehp > 0 and HP > 0:
+    input("> Press Enter to attack... ")
+    attack_roll = random.randint(1, 20)
+    if attack_roll == 20:
+        dmg = random.randint(1, max_dmg) * 2
+        ehp -= dmg
+        say(f"> CRITICAL HIT! You crush the {ename} for {dmg}! It has {ehp} HP left.")
+    elif attack_roll == 1 or attack_roll + attack_bonus < eac:
+        say(f"> Your swing misses the {ename}.")
+    else:
+        dmg = random.randint(1, max_dmg)
+        ehp -= dmg
+        say(f"> You strike the {ename} for {dmg}! It has {ehp} HP left.")
+
+    if ehp <= 0:
+        say(f"> The {ename} collapses, having chosen wrong to start a fight they could not finish. You stand over them, victorious. It seems wherever you originally came from had taught you the art of war well enough.")
+        break
+
+    eroll = random.randint(1, 20)
+    if eroll == 1 or eroll + e_atk < AC:
+        say(f"> The {ename} lashes out and misses.")
+    elif eroll == 20:
+        edmg_taken = random.randint(1, edmg) * 2
+        HP -= edmg_taken
+        say(f"> The {ename} lands a brutal hit for {edmg_taken}! You have {HP} HP left.")
+    else:
+        edmg_taken = random.randint(1, edmg)
+        HP -= edmg_taken
+        say(f"> The {ename} hits you for {edmg_taken}! You have {HP} HP left.")
+
+if HP <= 0:
+    say("> You fall to the ground. Your story ends where it starts, as they plunder whatever meager items you managed to cling onto, and kicks you back into the pile of corpses you climbed out from.")
